@@ -1,52 +1,54 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<title>Cuadro de Enfrentamientos</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    background: #f4f6f9;
-  }
-  h1 {
-    text-align: center;
-    color: #2c3e50;
-    margin-bottom: 30px;
-  }
-  .cuadro {
-    display: grid;
-    grid-template-columns: repeat(3, 220px);
-    grid-auto-rows: 100px;
-    gap: 40px 60px;
-    padding: 20px 40px;
-  }
-  .ronda-titulo {
-    font-weight: bold;
-    font-size: 18px;
-    text-align: center;
-    color: #34495e;
-    margin-bottom: 10px;
-    grid-column: span 1;
-  }
-  .partido {
-    background: white;
-    border: 2px solid #2980b9;
-    border-radius: 6px;
-    padding: 10px 15px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    text-align: center;
-  }
-  .ganador {
-    margin-top: 8px;
-    font-weight: bold;
-    color: #27ae60;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Cuadro de Enfrentamientos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f6f9;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+    .cuadro {
+      display: grid;
+      grid-template-columns: repeat(4, 220px);
+      gap: 30px 60px;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    .ronda-columna {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .ronda-titulo {
+      font-weight: bold;
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #34495e;
+    }
+    .partido {
+      background: white;
+      border: 2px solid #2980b9;
+      border-radius: 6px;
+      padding: 10px 15px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+      text-align: center;
+      margin-bottom: 20px;
+      min-width: 180px;
+    }
+    .ganador {
+      margin-top: 8px;
+      font-weight: bold;
+      color: #27ae60;
+    }
+  </style>
 </head>
 <body>
   <h1>Cuadro de Enfrentamientos</h1>
@@ -58,35 +60,18 @@
     function parseCSV(text) {
       const lines = text.trim().split("\n");
       const result = [];
-      let insideQuotes = false;
-      let field = "";
-      let row = [];
-
-      for(let i=1; i<lines.length; i++) { // saltar header
-        const line = lines[i];
-        insideQuotes = false;
-        field = "";
-        row = [];
-        for(let j=0; j<line.length; j++) {
-          const char = line[j];
-          if(char === '"') {
-            insideQuotes = !insideQuotes;
-          } else if(char === ',' && !insideQuotes) {
-            row.push(field.trim());
-            field = "";
-          } else {
-            field += char;
-          }
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(",");
+        if (parts.length >= 5) {
+          result.push(parts.map(p => p.trim()));
         }
-        row.push(field.trim());
-        result.push(row);
       }
       return result;
     }
 
-    function crearPartidoHTML(eq1, eq2, ganador) {
-      const div = document.createElement('div');
-      div.className = 'partido';
+    function crearPartido(eq1, eq2, ganador) {
+      const div = document.createElement("div");
+      div.className = "partido";
       div.innerHTML = `
         <div>${eq1}</div>
         <div>vs</div>
@@ -97,47 +82,47 @@
     }
 
     async function cargarCuadro() {
-      try {
-        const res = await fetch(URL_CSV_CUADRO);
-        const csv = await res.text();
-        const datos = parseCSV(csv);
+      const res = await fetch(URL_CSV_CUADRO);
+      const text = await res.text();
+      const datos = parseCSV(text);
 
-        // Agrupar partidos por ronda
-        const rondas = {};
-        datos.forEach(([ronda, id, eq1, eq2, ganador]) => {
-          if(!rondas[ronda]) rondas[ronda] = [];
-          rondas[ronda].push({ id, eq1, eq2, ganador });
-        });
+      const rondas = {
+        Octavos: [],
+        Cuartos: [],
+        Semifinal: [],
+        Final: []
+      };
 
-        // Orden fijo de rondas:
-        const ordenRondas = ["Cuartos", "Semifinal", "Final"];
+      datos.forEach(([ronda, id, eq1, eq2, ganador]) => {
+        if (rondas[ronda]) {
+          rondas[ronda].push({ id: Number(id), eq1, eq2, ganador });
+        }
+      });
 
-        const cuadroDiv = document.getElementById("cuadro");
-        cuadroDiv.innerHTML = "";
-
-        ordenRondas.forEach((ronda, i) => {
-          // Título ronda
-          const titulo = document.createElement("div");
-          titulo.className = "ronda-titulo";
-          titulo.textContent = ronda;
-          titulo.style.gridColumn = i + 1;
-          cuadroDiv.appendChild(titulo);
-
-          if(rondas[ronda]) {
-            // Ordenar por id para orden correcto
-            rondas[ronda].sort((a,b) => Number(a.id) - Number(b.id));
-            rondas[ronda].forEach(({ eq1, eq2, ganador }) => {
-              const partidoDiv = crearPartidoHTML(eq1, eq2, ganador);
-              partidoDiv.style.gridColumn = i + 1;
-              cuadroDiv.appendChild(partidoDiv);
-            });
-          }
-        });
-
-      } catch (err) {
-        console.error("Error cargando cuadro:", err);
-        document.getElementById("cuadro").textContent = "Error cargando datos del cuadro.";
+      // Ordenar por ID
+      for (const ronda in rondas) {
+        rondas[ronda].sort((a, b) => a.id - b.id);
       }
+
+      const cuadroDiv = document.getElementById("cuadro");
+      cuadroDiv.innerHTML = "";
+
+      ["Octavos", "Cuartos", "Semifinal", "Final"].forEach(ronda => {
+        const col = document.createElement("div");
+        col.className = "ronda-columna";
+
+        const titulo = document.createElement("div");
+        titulo.className = "ronda-titulo";
+        titulo.textContent = ronda;
+        col.appendChild(titulo);
+
+        rondas[ronda].forEach(p => {
+          const partido = crearPartido(p.eq1, p.eq2, p.ganador);
+          col.appendChild(partido);
+        });
+
+        cuadroDiv.appendChild(col);
+      });
     }
 
     cargarCuadro();
