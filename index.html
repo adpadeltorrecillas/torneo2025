@@ -2,96 +2,237 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Torneo de Pádel</title>
+  <title>Torneo de Pádel Torrecillas de la Tiesa 2025</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #f4f6f9;
       color: #333;
       padding: 20px;
       text-align: center;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    h1 {
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 25px;
+      margin-bottom: 20px;
+      user-select: none;
+      animation: fadeInDown 0.8s forwards;
+      flex-wrap: wrap;
+    }
+    header div.titulo {
+      text-align: center;
+      min-width: 280px;
+    }
+    header h1 {
       color: #2c3e50;
+      font-weight: 700;
+      font-size: 2.4rem;
+      margin: 0;
     }
+    header p.subtitulo {
+      font-size: 1.1rem;
+      color: #555;
+      margin: 6px 0 0;
+    }
+    header img {
+      height: 60px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: floatUp 2s ease-in-out infinite alternate;
+    }
+
+    /* Botones Resultados/Horarios con estilo categoría */
     nav {
       margin: 20px 0;
-    }
-    nav button {
-      margin: 0 10px;
-      padding: 10px 20px;
-      border: none;
-      background-color: #3498db;
-      color: white;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    nav button.active {
-      background-color: #2c3e50;
-    }
-    .categorias {
-      margin: 20px auto;
-      max-width: 600px;
       display: flex;
       justify-content: center;
       gap: 10px;
       flex-wrap: wrap;
+      user-select: none;
+    }
+    nav button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 50px;
+      background-color: white;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #3498db;
+      box-shadow: 0 2px 6px rgba(52,152,219,0.2);
+      transition: background-color 0.3s, color 0.3s, box-shadow 0.3s, transform 0.15s;
+    }
+    nav button:hover:not(.active) {
+      background-color: #d6e9fb;
+      color: #2980b9;
+      box-shadow: 0 4px 10px rgba(41,128,185,0.4);
+      transform: translateY(-2px);
+    }
+    nav button.active {
+      background-color: #c4defd;
+      color: #2980b9;
+      font-weight: 700;
+      box-shadow: 0 6px 14px rgba(41,128,185,0.6);
+      cursor: default;
+      transform: translateY(0);
+    }
+
+    .categorias {
+      margin: 20px auto;
+      max-width: 650px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      user-select: none;
     }
     .categorias button {
-      padding: 8px 16px;
+      padding: 10px 20px;
       border: none;
-      border-radius: 20px;
-      background-color: #ecf0f1;
+      border-radius: 50px;
+      background-color: white;
       cursor: pointer;
-      transition: background-color 0.3s;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #3498db;
+      box-shadow: 0 2px 6px rgba(52,152,219,0.2);
+      transition: background-color 0.3s, color 0.3s, box-shadow 0.3s, transform 0.15s;
+    }
+    .categorias button:hover:not(.active) {
+      background-color: #d6e9fb;
+      color: #2980b9;
+      box-shadow: 0 4px 10px rgba(41,128,185,0.4);
+      transform: translateY(-2px);
     }
     .categorias button.active {
-      background-color: #3498db;
-      color: white;
-      font-weight: bold;
+      background-color: #c4defd;
+      color: #2980b9;
+      font-weight: 700;
+      box-shadow: 0 6px 14px rgba(41,128,185,0.6);
+      cursor: default;
+      transform: translateY(0);
     }
+
     table {
       width: 90%;
-      max-width: 600px;
+      max-width: 650px;
       margin: 20px auto;
       border-collapse: collapse;
       background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      user-select: text;
     }
     th, td {
-      border: 1px solid #ccc;
-      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      padding: 14px 18px;
       word-break: break-word;
+      font-size: 1rem;
+      transition: background-color 0.3s;
     }
     th {
       background-color: #2c3e50;
       color: white;
+      font-weight: 700;
+      user-select: none;
+    }
+    tr:hover td {
+      background-color: #f0f8ff;
     }
     .hidden {
       display: none;
+    }
+
+    /* Cookie banner */
+    .cookie-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #2c3e50;
+      color: white;
+      padding: 15px 25px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
+      z-index: 9999;
+      opacity: 0;
+      animation: slideUp 0.6s forwards;
+      user-select: none;
+    }
+    .cookie-banner span {
+      flex: 1 1 70%;
+      margin-bottom: 8px;
+      text-align: left;
+      line-height: 1.3;
+    }
+    .cookie-banner button {
+      background: #27ae60;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background-color 0.3s;
+      flex: 0 0 auto;
+      user-select: none;
+    }
+    .cookie-banner button:hover {
+      background: #2ecc71;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) }
+      100% { transform: translateY(-10px) }
     }
   </style>
 </head>
 <body>
 
-  <h1>Torneo de Pádel</h1>
+  <header>
+    <div class="titulo">
+      <h1>Torneo de Pádel Torrecillas de la Tiesa 2025</h1>
+      <p class="subtitulo">14-15-16 Agosto 2025</p>
+    </div>
+    <img src="img/escudo_tdlt.png" alt="Escudo del Club" />
+  </header>
 
   <nav>
-    <button id="btn-resultados" class="active">Resultados</button>
-    <button id="btn-horarios">Horarios</button>
+    <button id="btn-resultados" class="active" aria-pressed="true">Resultados</button>
+    <button id="btn-horarios" aria-pressed="false">Horarios</button>
   </nav>
 
   <!-- Sección Resultados -->
   <section id="seccion-resultados">
-    <div class="categorias">
-      <button class="cat-btn active" data-cat="Primera">Primera</button>
-      <button class="cat-btn" data-cat="Primera Consolación">Primera Consolación</button>
-      <button class="cat-btn" data-cat="Segunda">Segunda</button>
-      <button class="cat-btn" data-cat="Tercera">Tercera</button>
-      <button class="cat-btn" data-cat="Femenino">Femenino</button>
+    <div class="categorias" role="tablist" aria-label="Categorías">
+      <button class="cat-btn active" data-cat="Primera" role="tab" aria-selected="true" tabindex="0">Primera</button>
+      <button class="cat-btn" data-cat="Primera Consolación" role="tab" aria-selected="false" tabindex="-1">Primera Consolación</button>
+      <button class="cat-btn" data-cat="Segunda" role="tab" aria-selected="false" tabindex="-1">Segunda</button>
+      <button class="cat-btn" data-cat="Tercera" role="tab" aria-selected="false" tabindex="-1">Tercera</button>
+      <button class="cat-btn" data-cat="Femenino" role="tab" aria-selected="false" tabindex="-1">Femenino</button>
     </div>
-    <table id="tabla-resultados">
+    <table id="tabla-resultados" role="tabpanel" aria-live="polite" aria-relevant="all">
       <thead>
         <tr>
           <th>Partido</th>
@@ -103,8 +244,8 @@
   </section>
 
   <!-- Sección Horarios -->
-  <section id="seccion-horarios" class="hidden">
-    <table id="tabla-horarios">
+  <section id="seccion-horarios" class="hidden" aria-hidden="true">
+    <table id="tabla-horarios" aria-live="polite" aria-relevant="all">
       <thead>
         <tr>
           <th>Fecha</th>
@@ -115,6 +256,11 @@
       <tbody></tbody>
     </table>
   </section>
+
+  <div id="cookie-banner" class="cookie-banner" style="display:none;" role="region" aria-label="Aviso de cookies">
+    <span>Este sitio utiliza cookies para mejorar tu experiencia. Al continuar navegando aceptas su uso.</span>
+    <button id="btn-aceptar-cookies" aria-label="Aceptar cookies">Aceptar</button>
+  </div>
 
   <script>
     const SHEET_RESULTADOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=0&single=true&output=csv";
@@ -130,7 +276,6 @@
       let field = "";
       let row = [];
 
-      // Saltamos la cabecera (línea 0)
       for(let i=1; i<lines.length; i++) {
         const line = lines[i];
         insideQuotes = false;
@@ -187,35 +332,74 @@
       }
     }
 
-    document.getElementById("btn-resultados").addEventListener("click", () => {
-      document.getElementById("seccion-resultados").classList.remove("hidden");
-      document.getElementById("seccion-horarios").classList.add("hidden");
-      document.getElementById("btn-resultados").classList.add("active");
-      document.getElementById("btn-horarios").classList.remove("active");
+    // Navegación Resultados / Horarios
+    const btnResultados = document.getElementById("btn-resultados");
+    const btnHorarios = document.getElementById("btn-horarios");
+    const seccionResultados = document.getElementById("seccion-resultados");
+    const seccionHorarios = document.getElementById("seccion-horarios");
+
+    btnResultados.addEventListener("click", () => {
+      seccionResultados.classList.remove("hidden");
+      seccionHorarios.classList.add("hidden");
+      btnResultados.classList.add("active");
+      btnHorarios.classList.remove("active");
+      btnResultados.setAttribute("aria-pressed", "true");
+      btnHorarios.setAttribute("aria-pressed", "false");
+      seccionResultados.setAttribute("aria-hidden", "false");
+      seccionHorarios.setAttribute("aria-hidden", "true");
     });
 
-    document.getElementById("btn-horarios").addEventListener("click", () => {
-      document.getElementById("seccion-resultados").classList.add("hidden");
-      document.getElementById("seccion-horarios").classList.remove("hidden");
-      document.getElementById("btn-horarios").classList.add("active");
-      document.getElementById("btn-resultados").classList.remove("active");
+    btnHorarios.addEventListener("click", () => {
+      seccionResultados.classList.add("hidden");
+      seccionHorarios.classList.remove("hidden");
+      btnHorarios.classList.add("active");
+      btnResultados.classList.remove("active");
+      btnHorarios.setAttribute("aria-pressed", "true");
+      btnResultados.setAttribute("aria-pressed", "false");
+      seccionHorarios.setAttribute("aria-hidden", "false");
+      seccionResultados.setAttribute("aria-hidden", "true");
     });
 
+    // Cambio categorías resultados
     document.querySelectorAll(".cat-btn").forEach(button => {
       button.addEventListener("click", () => {
         categoriaActual = button.getAttribute("data-cat");
         mostrarResultados(categoriaActual);
-        document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".cat-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-selected", "false");
+          b.setAttribute("tabindex", "-1");
+        });
         button.classList.add("active");
+        button.setAttribute("aria-selected", "true");
+        button.setAttribute("tabindex", "0");
       });
     });
 
+    // Carga inicial y refresco cada 60s
     cargarResultados();
     cargarHorarios();
     setInterval(() => {
       cargarResultados();
       cargarHorarios();
     }, 60000);
+
+    // Cookies
+    const cookieBanner = document.getElementById("cookie-banner");
+    const btnAceptarCookies = document.getElementById("btn-aceptar-cookies");
+
+    function aceptarCookies() {
+      localStorage.setItem("cookiesAceptadas", "true");
+      cookieBanner.style.display = "none";
+    }
+
+    btnAceptarCookies.addEventListener("click", aceptarCookies);
+
+    window.addEventListener("load", () => {
+      if (!localStorage.getItem("cookiesAceptadas")) {
+        cookieBanner.style.display = "flex";
+      }
+    });
   </script>
 </body>
 </html>
