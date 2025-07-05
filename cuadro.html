@@ -15,89 +15,60 @@
     color: #2c3e50;
     margin-bottom: 30px;
   }
-  .cuadro {
-    display: flex;
-    justify-content: center;
-    gap: 60px;
+  .cuadro-container {
+    position: relative;
     overflow-x: auto;
-    padding-bottom: 40px;
+    padding-bottom: 60px;
+    border: 1px solid #ddd;
+    background: white;
+  }
+  .cuadro {
+    display: grid;
+    grid-template-columns: repeat(3, 220px);
+    grid-auto-rows: 100px;
+    gap: 40px 60px;
+    padding: 20px 40px;
     position: relative;
   }
-  .ronda {
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-    position: relative;
-  }
-  .ronda h3 {
+  .ronda-titulo {
+    grid-column: span 1;
+    font-weight: bold;
+    font-size: 18px;
     text-align: center;
-    margin-bottom: 20px;
-    font-weight: 700;
     color: #34495e;
+    margin-bottom: 10px;
   }
   .partido {
     background: white;
     border: 2px solid #2980b9;
-    padding: 10px 15px;
     border-radius: 6px;
-    min-width: 200px;
+    padding: 10px 15px;
     box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
     position: relative;
   }
   .ganador {
+    margin-top: 8px;
     font-weight: bold;
     color: #27ae60;
-    margin-top: 8px;
   }
-
-  /* Líneas entre cuadros */
-  /* Para cada ronda menos la última, añadimos líneas con pseudoelementos */
-
-  /* Línea vertical desde centro derecho de cada partido de una ronda a la siguiente */
-  .ronda:not(:last-child) .partido::after {
-    content: "";
+  svg {
     position: absolute;
-    top: 50%;
-    right: -30px;
-    width: 30px;
-    height: 2px;
-    background: #2980b9;
-    transform: translateY(-50%);
-    z-index: 10;
-  }
-
-  /* Línea vertical que conecta los partidos de la siguiente ronda */
-  .ronda:not(:last-child) {
-    padding-right: 30px;
-  }
-
-  /* Para conectar líneas verticales entre partidos */
-  .ronda:not(:last-child) .partido:nth-child(odd)::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    right: -30px;
-    width: 2px;
-    height: 40px;
-    background: #2980b9;
-    transform: translateY(-50%);
-    z-index: 9;
-  }
-  .ronda:not(:last-child) .partido:nth-child(even)::before {
-    content: "";
-    position: absolute;
-    top: -40px;
-    right: -30px;
-    width: 2px;
-    height: 40px;
-    background: #2980b9;
-    z-index: 9;
+    top: 0;
+    left: 0;
+    pointer-events: none;
   }
 </style>
 </head>
 <body>
   <h1>Cuadro de Enfrentamientos</h1>
-  <div class="cuadro" id="cuadro"></div>
+  <div class="cuadro-container" id="container">
+    <div class="cuadro" id="cuadro"></div>
+    <svg id="lineas" width="100%" height="400"></svg>
+  </div>
 
   <script>
     const URL_CSV_CUADRO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=1648244325&single=true&output=csv";
@@ -131,6 +102,19 @@
       return result;
     }
 
+    function crearPartidoHTML(id, eq1, eq2, ganador) {
+      const div = document.createElement('div');
+      div.className = 'partido';
+      div.id = id; // id para referencia en líneas
+      div.innerHTML = `
+        <div>${eq1}</div>
+        <div>vs</div>
+        <div>${eq2}</div>
+        <div class="ganador">Ganador: ${ganador}</div>
+      `;
+      return div;
+    }
+
     async function cargarCuadro() {
       try {
         const res = await fetch(URL_CSV_CUADRO);
@@ -150,38 +134,119 @@
         const cuadroDiv = document.getElementById("cuadro");
         cuadroDiv.innerHTML = "";
 
-        ordenRondas.forEach(ronda => {
+        // Agregar títulos
+        ordenRondas.forEach((r, i) => {
+          const titulo = document.createElement("div");
+          titulo.className = "ronda-titulo";
+          titulo.textContent = r;
+          titulo.style.gridColumn = (i+1);
+          cuadroDiv.appendChild(titulo);
+        });
+
+        // Guardamos las posiciones para dibujar líneas
+        const posiciones = {};
+
+        // Insertar partidos en grid
+        ordenRondas.forEach((ronda, colIndex) => {
           if(rondas[ronda]) {
-            const rondaDiv = document.createElement("div");
-            rondaDiv.className = "ronda";
-
-            const titulo = document.createElement("h3");
-            titulo.textContent = ronda;
-            rondaDiv.appendChild(titulo);
-
-            // Ordenar partidos por id (numérico)
+            // Ordenar partidos por id numérico
             rondas[ronda].sort((a,b) => Number(a.id) - Number(b.id));
 
-            rondas[ronda].forEach(({eq1, eq2, ganador}) => {
-              const partidoDiv = document.createElement("div");
-              partidoDiv.className = "partido";
-              partidoDiv.innerHTML = `
-                <div>${eq1}</div>
-                <div>vs</div>
-                <div>${eq2}</div>
-                <div class="ganador">Ganador: ${ganador}</div>
-              `;
-              rondaDiv.appendChild(partidoDiv);
-            });
+            rondas[ronda].forEach((p, index) => {
+              // Crear partido
+              const partidoDiv = crearPartidoHTML(`${ronda}-${p.id}`, p.eq1, p.eq2, p.ganador);
 
-            cuadroDiv.appendChild(rondaDiv);
+              // Grid position (column, row)
+              partidoDiv.style.gridColumn = colIndex + 1;
+              partidoDiv.style.gridRow = index + 2; // +2 por título
+
+              cuadroDiv.appendChild(partidoDiv);
+
+              // Guardamos la posición para las líneas
+              posiciones[`${ronda}-${p.id}`] = partidoDiv;
+            });
           }
         });
+
+        // Esperar a que el DOM pinte para calcular posiciones
+        setTimeout(() => dibujarLineas(posiciones), 100);
 
       } catch(err) {
         console.error("Error cargando cuadro:", err);
         document.getElementById("cuadro").textContent = "Error cargando datos del cuadro.";
       }
+    }
+
+    function dibujarLineas(posiciones) {
+      const svg = document.getElementById("lineas");
+      svg.innerHTML = "";
+      const cont = document.getElementById("container");
+      const contRect = cont.getBoundingClientRect();
+
+      // Función para obtener centro derecho de un partido
+      function puntoDerecho(el) {
+        const rect = el.getBoundingClientRect();
+        return {
+          x: rect.right - contRect.left,
+          y: rect.top + rect.height/2 - contRect.top
+        };
+      }
+      // Centro izquierdo de un partido
+      function puntoIzquierdo(el) {
+        const rect = el.getBoundingClientRect();
+        return {
+          x: rect.left - contRect.left,
+          y: rect.top + rect.height/2 - contRect.top
+        };
+      }
+
+      // Conexiones a dibujar:
+      // Cuartos 1 y 2 -> Semifinal 5
+      // Cuartos 3 y 4 -> Semifinal 6
+      // Semifinal 5 y 6 -> Final 7
+
+      const conexiones = [
+        // cuartos -> semifinal
+        { from: "Cuartos-1", to: "Semifinal-5" },
+        { from: "Cuartos-2", to: "Semifinal-5" },
+
+        { from: "Cuartos-3", to: "Semifinal-6" },
+        { from: "Cuartos-4", to: "Semifinal-6" },
+
+        // semifinal -> final
+        { from: "Semifinal-5", to: "Final-7" },
+        { from: "Semifinal-6", to: "Final-7" },
+      ];
+
+      conexiones.forEach(({from, to}) => {
+        const elFrom = posiciones[from];
+        const elTo = posiciones[to];
+        if(!elFrom || !elTo) return;
+
+        const pFrom = puntoDerecho(elFrom);
+        const pTo = puntoIzquierdo(elTo);
+
+        // Línea en SVG: trazamos con un path que hace 2 segmentos para curva tipo cuadro
+        const dx = (pTo.x - pFrom.x) / 2;
+
+        const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+        path.setAttribute("stroke", "#2980b9");
+        path.setAttribute("stroke-width", "3");
+        path.setAttribute("fill", "none");
+
+        // Mover a punto inicio
+        // Línea horizontal a la mitad entre los dos puntos
+        // Línea vertical hasta y destino
+        // Línea horizontal hasta punto destino
+        const d = `
+          M ${pFrom.x} ${pFrom.y}
+          h ${dx}
+          V ${pTo.y}
+          h ${dx}
+        `;
+        path.setAttribute("d", d);
+        svg.appendChild(path);
+      });
     }
 
     cargarCuadro();
