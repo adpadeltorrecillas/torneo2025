@@ -3,43 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <title>Torneo de Pádel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f7f9fc;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
       padding: 20px;
-      text-align: center;
+      color: #333;
     }
+
     h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    nav button {
+      background: none;
+      border: none;
+      font-size: 18px;
+      font-weight: 600;
+      color: #3498db;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+
+    nav button.active {
+      border-color: #3498db;
       color: #2c3e50;
     }
-    section {
-      margin: 40px 0;
+
+    .categorias {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
     }
+
+    .categorias button {
+      background-color: #ecf0f1;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .categorias button.active {
+      background-color: #3498db;
+      color: white;
+      font-weight: 600;
+    }
+
     table {
-      margin: 0 auto;
-      border-collapse: collapse;
       width: 90%;
-      max-width: 600px;
+      max-width: 800px;
+      margin: auto;
+      border-collapse: collapse;
       background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 40px;
     }
+
     th, td {
-      border: 1px solid #ccc;
       padding: 12px;
-      text-align: center;
+      border: 1px solid #ddd;
     }
+
     th {
       background-color: #2c3e50;
       color: white;
     }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      table {
+        font-size: 14px;
+      }
+
+      nav button {
+        font-size: 16px;
+      }
+    }
   </style>
 </head>
 <body>
+
   <h1>Torneo de Pádel</h1>
 
-  <section>
-    <h2>Resultados</h2>
+  <nav>
+    <button id="btn-resultados" class="active">Resultados</button>
+    <button id="btn-horarios">Horarios</button>
+  </nav>
+
+  <!-- Resultados -->
+  <div id="seccion-resultados">
+    <div class="categorias">
+      <button class="cat-btn active" data-cat="Primera">Primera</button>
+      <button class="cat-btn" data-cat="Primera Consolación">Primera Consolación</button>
+      <button class="cat-btn" data-cat="Segunda">Segunda</button>
+      <button class="cat-btn" data-cat="Tercera">Tercera</button>
+      <button class="cat-btn" data-cat="Femenino">Femenino</button>
+    </div>
     <table id="tabla-resultados">
       <thead>
         <tr>
@@ -49,10 +130,10 @@
       </thead>
       <tbody></tbody>
     </table>
-  </section>
+  </div>
 
-  <section>
-    <h2>Horarios</h2>
+  <!-- Horarios -->
+  <div id="seccion-horarios" class="hidden">
     <table id="tabla-horarios">
       <thead>
         <tr>
@@ -63,53 +144,79 @@
       </thead>
       <tbody></tbody>
     </table>
-  </section>
+  </div>
 
   <script>
-    const URL_RESULTADOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=0&single=true&output=csv";
-    const URL_HORARIOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=319054192&single=true&output=csv";
+    const SHEET_RESULTADOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=0&single=true&output=csv";
+    const SHEET_HORARIOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=319054192&single=true&output=csv";
 
-    function parseCSVRow(row) {
-      const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
-      const result = [];
-      let match;
-      while ((match = regex.exec(row)) !== null) {
-        result.push(match[1].replace(/(^"|"$)/g, ""));
-      }
-      return result;
-    }
+    let resultados = [];
+    let categoriaActual = "Primera";
+
+    const parseCSV = text => {
+      const rows = text.trim().split("\n").slice(1);
+      return rows.map(row => {
+        const [col1, col2, col3] = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+        return [col1?.replace(/(^"|"$)/g, ""), col2?.replace(/(^"|"$)/g, ""), col3?.replace(/(^"|"$)/g, "")];
+      });
+    };
 
     async function cargarResultados() {
-      const res = await fetch(URL_RESULTADOS);
+      const res = await fetch(SHEET_RESULTADOS);
       const csv = await res.text();
-      const rows = csv.trim().split("\n").slice(1);
+      resultados = parseCSV(csv);
+      mostrarResultados(categoriaActual);
+    }
+
+    function mostrarResultados(categoria) {
       const tbody = document.querySelector("#tabla-resultados tbody");
       tbody.innerHTML = "";
-      rows.forEach(row => {
-        const [partido, resultado] = parseCSVRow(row);
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${partido}</td><td>${resultado}</td>`;
-        tbody.appendChild(tr);
+      resultados.filter(r => r[2] === categoria).forEach(([partido, resultado]) => {
+        const row = `<tr><td>${partido}</td><td>${resultado}</td></tr>`;
+        tbody.insertAdjacentHTML("beforeend", row);
       });
     }
 
     async function cargarHorarios() {
-      const res = await fetch(URL_HORARIOS);
+      const res = await fetch(SHEET_HORARIOS);
       const csv = await res.text();
-      const rows = csv.trim().split("\n").slice(1);
+      const datos = parseCSV(csv);
       const tbody = document.querySelector("#tabla-horarios tbody");
       tbody.innerHTML = "";
-      rows.forEach(row => {
-        const [fecha, hora, partido] = parseCSVRow(row);
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${fecha}</td><td>${hora}</td><td>${partido}</td>`;
-        tbody.appendChild(tr);
+      datos.forEach(([fecha, hora, partido]) => {
+        const row = `<tr><td>${fecha}</td><td>${hora}</td><td>${partido}</td></tr>`;
+        tbody.insertAdjacentHTML("beforeend", row);
       });
     }
 
+    // Eventos para cambiar de pestaña
+    document.getElementById("btn-resultados").addEventListener("click", () => {
+      document.getElementById("seccion-resultados").classList.remove("hidden");
+      document.getElementById("seccion-horarios").classList.add("hidden");
+      document.getElementById("btn-resultados").classList.add("active");
+      document.getElementById("btn-horarios").classList.remove("active");
+    });
+
+    document.getElementById("btn-horarios").addEventListener("click", () => {
+      document.getElementById("seccion-resultados").classList.add("hidden");
+      document.getElementById("seccion-horarios").classList.remove("hidden");
+      document.getElementById("btn-horarios").classList.add("active");
+      document.getElementById("btn-resultados").classList.remove("active");
+    });
+
+    // Filtro de categorías
+    document.querySelectorAll(".cat-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        categoriaActual = btn.getAttribute("data-cat");
+        mostrarResultados(categoriaActual);
+        document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+
+    // Carga inicial y recarga cada 60s
     cargarResultados();
     cargarHorarios();
-
     setInterval(() => {
       cargarResultados();
       cargarHorarios();
