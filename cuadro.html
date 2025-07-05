@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Cuadro de Enfrentamientos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f4f6f9;
+  }
+  h1 {
+    text-align: center;
+    color: #2c3e50;
+  }
+  .cuadro {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  .ronda {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  .ronda h3 {
+    text-align: center;
+  }
+  .partido {
+    background: white;
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    border-radius: 6px;
+    min-width: 180px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .ganador {
+    font-weight: bold;
+    color: #2ecc71;
+  }
+</style>
+</head>
+<body>
+  <h1>Cuadro de Enfrentamientos</h1>
+  <div class="cuadro" id="cuadro"></div>
+
+  <script>
+    const URL_CSV_CUADRO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=1648244325&single=true&output=csv";
+
+    function parseCSV(text) {
+      const lines = text.trim().split("\n");
+      const result = [];
+      let insideQuotes = false;
+      let field = "";
+      let row = [];
+
+      for(let i=1; i<lines.length; i++) { // saltar header
+        const line = lines[i];
+        insideQuotes = false;
+        field = "";
+        row = [];
+        for(let j=0; j<line.length; j++) {
+          const char = line[j];
+          if(char === '"') {
+            insideQuotes = !insideQuotes;
+          } else if(char === ',' && !insideQuotes) {
+            row.push(field.trim());
+            field = "";
+          } else {
+            field += char;
+          }
+        }
+        row.push(field.trim());
+        result.push(row);
+      }
+      return result;
+    }
+
+    async function cargarCuadro() {
+      try {
+        const res = await fetch(URL_CSV_CUADRO);
+        const csv = await res.text();
+        const datos = parseCSV(csv);
+
+        // Agrupar partidos por ronda
+        const rondas = {};
+        datos.forEach(([ronda, id, eq1, eq2, ganador]) => {
+          if(!rondas[ronda]) rondas[ronda] = [];
+          rondas[ronda].push({ id, eq1, eq2, ganador });
+        });
+
+        // Ordenar rondas por aparición en hoja o alfabéticamente
+        const ordenRondas = Object.keys(rondas).sort();
+
+        const cuadroDiv = document.getElementById("cuadro");
+        cuadroDiv.innerHTML = "";
+
+        ordenRondas.forEach(ronda => {
+          if(rondas[ronda]) {
+            const rondaDiv = document.createElement("div");
+            rondaDiv.className = "ronda";
+
+            const titulo = document.createElement("h3");
+            titulo.textContent = ronda;
+            rondaDiv.appendChild(titulo);
+
+            // Ordenar partidos por id (numérico)
+            rondas[ronda].sort((a,b) => Number(a.id) - Number(b.id));
+
+            rondas[ronda].forEach(({eq1, eq2, ganador}) => {
+              const partidoDiv = document.createElement("div");
+              partidoDiv.className = "partido";
+              partidoDiv.innerHTML = `
+                <div>${eq1}</div>
+                <div>vs</div>
+                <div>${eq2}</div>
+                <div class="ganador">Ganador: ${ganador}</div>
+              `;
+              rondaDiv.appendChild(partidoDiv);
+            });
+
+            cuadroDiv.appendChild(rondaDiv);
+          }
+        });
+
+      } catch(err) {
+        console.error("Error cargando cuadro:", err);
+        document.getElementById("cuadro").textContent = "Error cargando datos del cuadro.";
+      }
+    }
+
+    cargarCuadro();
+  </script>
+</body>
+</html>
