@@ -17,36 +17,67 @@
     }
     .cuadro {
       display: grid;
-      grid-template-columns: repeat(4, 220px);
-      gap: 30px 60px;
+      grid-template-columns: repeat(4, 240px);
+      grid-template-rows: repeat(15, 130px);
+      gap: 10px 60px;
       justify-content: center;
-      overflow-x: auto;
-    }
-    .ronda-columna {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
     .ronda-titulo {
       font-weight: bold;
       font-size: 20px;
-      margin-bottom: 20px;
+      text-align: center;
       color: #34495e;
+      grid-row: 1;
     }
     .partido {
       background: white;
       border: 2px solid #2980b9;
-      border-radius: 6px;
+      border-radius: 8px;
       padding: 10px 15px;
       box-shadow: 0 3px 8px rgba(0,0,0,0.12);
       text-align: center;
-      margin-bottom: 20px;
-      min-width: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    .partido.en-juego {
+      border-color: #e74c3c;
+      background-color: #fff0f0;
+    }
+    .vs {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 5px;
     }
     .ganador {
-      margin-top: 8px;
-      font-weight: bold;
       color: #27ae60;
+    }
+    .fecha {
+      font-size: 12px;
+      color: #7f8c8d;
+      margin-bottom: 6px;
+    }
+    .resultado-box {
+      background-color: #ecf0f1;
+      border: 1px solid #bdc3c7;
+      padding: 5px 10px;
+      border-radius: 6px;
+      display: inline-block;
+      font-weight: bold;
+      color: #2c3e50;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    .en-juego-label {
+      background-color: #e74c3c;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      display: inline-block;
+      margin-top: 5px;
     }
   </style>
 </head>
@@ -62,22 +93,41 @@
       const result = [];
       for (let i = 1; i < lines.length; i++) {
         const parts = lines[i].split(",");
-        if (parts.length >= 5) {
+        if (parts.length >= 9) {
           result.push(parts.map(p => p.trim()));
         }
       }
       return result;
     }
 
-    function crearPartido(eq1, eq2, ganador) {
+    function crearPartido(eq1, eq2, ganador, fecha, hora, resultado, enJuego, col, row) {
       const div = document.createElement("div");
       div.className = "partido";
+      div.style.gridColumn = col;
+      div.style.gridRow = row;
+
+      if (["✅", "sí", "true", "1"].includes(enJuego.toLowerCase())) {
+        div.classList.add("en-juego");
+      }
+
+      const vsHTML = ganador
+        ? `<span class="${ganador === eq1 ? 'ganador' : ''}">${eq1}</span> VS <span class="${ganador === eq2 ? 'ganador' : ''}">${eq2}</span>`
+        : `${eq1} VS ${eq2}`;
+
       div.innerHTML = `
-        <div>${eq1}</div>
-        <div>vs</div>
-        <div>${eq2}</div>
-        <div class="ganador">Ganador: ${ganador}</div>
+        <div class="vs">${vsHTML}</div>
+        <div class="fecha">${fecha} ${hora}</div>
+        ${resultado ? `<div class="resultado-box">${resultado}</div>` : ""}
+        ${["✅", "sí", "true", "1"].includes(enJuego.toLowerCase()) ? `<div class="en-juego-label">EN JUEGO</div>` : ""}
       `;
+      return div;
+    }
+
+    function crearTitulo(ronda, col) {
+      const div = document.createElement("div");
+      div.className = "ronda-titulo";
+      div.style.gridColumn = col;
+      div.textContent = ronda;
       return div;
     }
 
@@ -93,35 +143,42 @@
         Final: []
       };
 
-      datos.forEach(([ronda, id, eq1, eq2, ganador]) => {
+      datos.forEach(([ronda, id, eq1, eq2, ganador, fecha, hora, resultado, enJuego]) => {
         if (rondas[ronda]) {
-          rondas[ronda].push({ id: Number(id), eq1, eq2, ganador });
+          rondas[ronda].push({ 
+            id: Number(id), eq1, eq2, ganador, fecha, hora, resultado, enJuego: enJuego || "" 
+          });
         }
       });
 
-      // Ordenar por ID
       for (const ronda in rondas) {
         rondas[ronda].sort((a, b) => a.id - b.id);
       }
 
-      const cuadroDiv = document.getElementById("cuadro");
-      cuadroDiv.innerHTML = "";
+      const cuadro = document.getElementById("cuadro");
+      cuadro.innerHTML = "";
 
-      ["Octavos", "Cuartos", "Semifinal", "Final"].forEach(ronda => {
-        const col = document.createElement("div");
-        col.className = "ronda-columna";
+      cuadro.appendChild(crearTitulo("Octavos", 1));
+      cuadro.appendChild(crearTitulo("Cuartos", 2));
+      cuadro.appendChild(crearTitulo("Semifinal", 3));
+      cuadro.appendChild(crearTitulo("Final", 4));
 
-        const titulo = document.createElement("div");
-        titulo.className = "ronda-titulo";
-        titulo.textContent = ronda;
-        col.appendChild(titulo);
+      const posiciones = {
+        Octavos: [2, 3, 5, 6, 8, 9, 11, 12],
+        Cuartos: [3, 6, 9, 12],
+        Semifinal: [4, 10],
+        Final: [7]
+      };
 
-        rondas[ronda].forEach(p => {
-          const partido = crearPartido(p.eq1, p.eq2, p.ganador);
-          col.appendChild(partido);
+      ["Octavos", "Cuartos", "Semifinal", "Final"].forEach((ronda, i) => {
+        const col = i + 1;
+        const rondaData = rondas[ronda];
+        if (!rondaData) return;
+        rondaData.forEach((p, idx) => {
+          const row = posiciones[ronda][idx] ?? (idx + 2);
+          const partido = crearPartido(p.eq1, p.eq2, p.ganador, p.fecha, p.hora, p.resultado, p.enJuego, col, row);
+          cuadro.appendChild(partido);
         });
-
-        cuadroDiv.appendChild(col);
       });
     }
 
