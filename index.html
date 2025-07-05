@@ -401,5 +401,37 @@
       }
     });
   </script>
+<div id="contador" style="margin-top: 20px; font-weight: bold;">
+  Visitantes: <span id="visitas">...</span>
+</div>
+
+<script>
+  const NAMESPACE = "torneo-tdlt-2025"; // Personaliza si tienes varios contadores
+  const KEY = "visitas";
+  const STORAGE_KEY = "ultima-visita";
+
+  // Comprobar si ya visitó hoy
+  const hoy = new Date().toISOString().slice(0, 10); // Formato YYYY-MM-DD
+  const ultimaVisita = localStorage.getItem(STORAGE_KEY);
+
+  // Si no visitó hoy, cuenta una nueva visita
+  if (ultimaVisita !== hoy) {
+    fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("visitas").textContent = data.value;
+        localStorage.setItem(STORAGE_KEY, hoy); // Guardar fecha de hoy
+      });
+  } else {
+    // Solo obtener el valor sin incrementarlo
+    fetch(`https://api.countapi.xyz/get/${NAMESPACE}/${KEY}`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("visitas").textContent = data.value;
+      });
+  }
+</script>
+
+
 </body>
 </html>
