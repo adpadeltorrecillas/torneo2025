@@ -146,23 +146,30 @@
         // Guardamos las posiciones para dibujar líneas
         const posiciones = {};
 
-        // Insertar partidos en grid
+        // Insertar partidos en grid con posiciones fijas por id
+        // Para que las líneas queden bien, ponemos los partidos en filas fijas:
+        // Cuartos: 4 partidos, filas 2-5
+        // Semifinal: 2 partidos, filas 2 y 4
+        // Final: 1 partido, fila 3
+
+        // Mapeo de id a fila (fila en grid)
+        const filaPorId = {
+          "1": 2,
+          "2": 3,
+          "3": 4,
+          "4": 5,
+          "5": 2,
+          "6": 4,
+          "7": 3
+        };
+
         ordenRondas.forEach((ronda, colIndex) => {
           if(rondas[ronda]) {
-            // Ordenar partidos por id numérico
-            rondas[ronda].sort((a,b) => Number(a.id) - Number(b.id));
-
-            rondas[ronda].forEach((p, index) => {
-              // Crear partido
+            rondas[ronda].forEach((p) => {
               const partidoDiv = crearPartidoHTML(`${ronda}-${p.id}`, p.eq1, p.eq2, p.ganador);
-
-              // Grid position (column, row)
               partidoDiv.style.gridColumn = colIndex + 1;
-              partidoDiv.style.gridRow = index + 2; // +2 por título
-
+              partidoDiv.style.gridRow = filaPorId[p.id] || 'auto';
               cuadroDiv.appendChild(partidoDiv);
-
-              // Guardamos la posición para las líneas
               posiciones[`${ronda}-${p.id}`] = partidoDiv;
             });
           }
@@ -183,7 +190,6 @@
       const cont = document.getElementById("container");
       const contRect = cont.getBoundingClientRect();
 
-      // Función para obtener centro derecho de un partido
       function puntoDerecho(el) {
         const rect = el.getBoundingClientRect();
         return {
@@ -191,7 +197,6 @@
           y: rect.top + rect.height/2 - contRect.top
         };
       }
-      // Centro izquierdo de un partido
       function puntoIzquierdo(el) {
         const rect = el.getBoundingClientRect();
         return {
@@ -200,20 +205,11 @@
         };
       }
 
-      // Conexiones a dibujar:
-      // Cuartos 1 y 2 -> Semifinal 5
-      // Cuartos 3 y 4 -> Semifinal 6
-      // Semifinal 5 y 6 -> Final 7
-
       const conexiones = [
-        // cuartos -> semifinal
         { from: "Cuartos-1", to: "Semifinal-5" },
         { from: "Cuartos-2", to: "Semifinal-5" },
-
         { from: "Cuartos-3", to: "Semifinal-6" },
         { from: "Cuartos-4", to: "Semifinal-6" },
-
-        // semifinal -> final
         { from: "Semifinal-5", to: "Final-7" },
         { from: "Semifinal-6", to: "Final-7" },
       ];
@@ -226,7 +222,6 @@
         const pFrom = puntoDerecho(elFrom);
         const pTo = puntoIzquierdo(elTo);
 
-        // Línea en SVG: trazamos con un path que hace 2 segmentos para curva tipo cuadro
         const dx = (pTo.x - pFrom.x) / 2;
 
         const path = document.createElementNS("http://www.w3.org/2000/svg","path");
@@ -234,10 +229,6 @@
         path.setAttribute("stroke-width", "3");
         path.setAttribute("fill", "none");
 
-        // Mover a punto inicio
-        // Línea horizontal a la mitad entre los dos puntos
-        // Línea vertical hasta y destino
-        // Línea horizontal hasta punto destino
         const d = `
           M ${pFrom.x} ${pFrom.y}
           h ${dx}
