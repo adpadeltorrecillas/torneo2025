@@ -1,14 +1,82 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Resultados Torneo Pádel</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-    th { background-color: #f2f2f2; }
-    caption { font-size: 1.2em; margin-bottom: 10px; }
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 30px 20px;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #2a4d69;
+      margin-bottom: 25px;
+      font-weight: 600;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 2.4rem;
+    }
+
+    table {
+      width: 100%;
+      max-width: 900px;
+      border-collapse: separate;
+      border-spacing: 0;
+      box-shadow: 0 8px 24px rgba(42, 77, 105, 0.15);
+      border-radius: 12px;
+      overflow: hidden;
+      background: white;
+    }
+
+    thead {
+      background: #2a4d69;
+      color: white;
+    }
+
+    th, td {
+      padding: 16px 24px;
+      text-align: center;
+      font-weight: 500;
+      border-bottom: 1px solid #e2e8f0;
+      user-select: none;
+    }
+
+    tbody tr:hover {
+      background-color: #f7f9fc;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 15px 10px;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      table {
+        font-size: 14px;
+      }
+
+      th, td {
+        padding: 12px 10px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -22,7 +90,7 @@
       </tr>
     </thead>
     <tbody>
-      <!-- Aquí se insertarán los datos -->
+      <!-- Datos cargados aquí -->
     </tbody>
   </table>
 
@@ -33,10 +101,10 @@
       try {
         const res = await fetch(SHEET_URL);
         const csv = await res.text();
-        const rows = csv.trim().split("\n").slice(1); // omite encabezado
+        const rows = csv.trim().split("\n").slice(1);
 
         const tbody = document.querySelector("#tabla-resultados tbody");
-        tbody.innerHTML = ""; // limpia la tabla
+        tbody.innerHTML = "";
 
         rows.forEach(row => {
           const [partido, resultado, ronda] = row.split(",");
@@ -53,4 +121,8 @@
       }
     }
 
-    // Carga i
+    cargarResultados();
+    setInterval(cargarResultados, 60000);
+  </script>
+</body>
+</html>
