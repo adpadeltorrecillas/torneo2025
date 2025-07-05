@@ -55,6 +55,40 @@
       border-color: #1f3d59;
     }
 
+    /* Botones categorías resultados */
+    #categorias-resultados {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      max-width: 900px;
+    }
+
+    .cat-btn {
+      background: #e1e8f5;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cat-btn:hover {
+      background: #b1c5e0;
+    }
+
+    .cat-btn.active {
+      background: #2a4d69;
+      color: white;
+    }
+
     table {
       width: 100%;
       max-width: 900px;
@@ -108,6 +142,15 @@
       nav {
         gap: 15px;
       }
+
+      #categorias-resultados {
+        gap: 10px;
+      }
+
+      .cat-btn {
+        padding: 8px 14px;
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
@@ -118,6 +161,15 @@
     <a id="link-resultados" class="active">Resultados</a>
     <a id="link-horarios">Horarios</a>
   </nav>
+
+  <!-- Categorías dentro de Resultados -->
+  <div id="categorias-resultados" style="display: flex;">
+    <button class="cat-btn active" data-cat="Primera Categoría">🎾 Primera Categoría</button>
+    <button class="cat-btn" data-cat="Primera Consolación">🏆 Primera Consolación</button>
+    <button class="cat-btn" data-cat="Segunda Categoría">⭐ Segunda Categoría</button>
+    <button class="cat-btn" data-cat="Tercera Categoría">🥉 Tercera Categoría</button>
+    <button class="cat-btn" data-cat="Categoría Femenino">👩‍🦰 Categoría Femenino</button>
+  </div>
 
   <!-- Tabla Resultados -->
   <table id="tabla-resultados">
@@ -148,6 +200,7 @@
     const SHEET_RESULTADOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=0&single=true&output=csv";
     const SHEET_HORARIOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=319054192&single=true&output=csv";
 
+    // Parse CSV fila
     function parseCSVRow(row) {
       const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
       const matches = [];
@@ -158,30 +211,57 @@
       return matches;
     }
 
+    // Variables globales para resultados y categoría actual
+    let resultadosData = [];
+    let categoriaActual = "Primera Categoría";
+
     async function cargarResultados() {
       try {
         const res = await fetch(SHEET_RESULTADOS);
         const csv = await res.text();
         const rows = csv.trim().split("\n").slice(1);
 
-        const tbody = document.querySelector("#tabla-resultados tbody");
-        tbody.innerHTML = "";
-
-        rows.forEach(row => {
-          const [partido, resultado, ronda] = parseCSVRow(row);
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${ronda}</td>
-            <td>${partido}</td>
-            <td>${resultado}</td>
-          `;
-          tbody.appendChild(tr);
+        resultadosData = rows.map(row => {
+          const [partido, resultado, ronda, categoria] = parseCSVRow(row);
+          return { partido, resultado, ronda, categoria };
         });
+
+        mostrarResultadosPorCategoria(categoriaActual);
+
       } catch (error) {
         console.error("Error al cargar resultados:", error);
       }
     }
 
+    function mostrarResultadosPorCategoria(categoria) {
+      const tbody = document.querySelector("#tabla-resultados tbody");
+      tbody.innerHTML = "";
+
+      const filtrados = resultadosData.filter(r => r.categoria === categoria);
+
+      filtrados.forEach(({ ronda, partido, resultado }) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${ronda}</td>
+          <td>${partido}</td>
+          <td>${resultado}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Eventos para botones categorías
+    document.querySelectorAll(".cat-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        categoriaActual = btn.getAttribute("data-cat");
+        mostrarResultadosPorCategoria(categoriaActual);
+
+        document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+
+    // Cargar horarios
     async function cargarHorarios() {
       try {
         const res = await fetch(SHEET_HORARIOS);
@@ -207,19 +287,23 @@
       }
     }
 
+    // Mostrar tabla resultados u horarios
     function mostrarTabla(tabla) {
       const tablaResultados = document.getElementById("tabla-resultados");
       const tablaHorarios = document.getElementById("tabla-horarios");
+      const categoriasResultados = document.getElementById("categorias-resultados");
       const linkResultados = document.getElementById("link-resultados");
       const linkHorarios = document.getElementById("link-horarios");
 
       if (tabla === "resultados") {
         tablaResultados.style.display = "";
+        categoriasResultados.style.display = "flex";
         tablaHorarios.style.display = "none";
         linkResultados.classList.add("active");
         linkHorarios.classList.remove("active");
       } else {
         tablaResultados.style.display = "none";
+        categoriasResultados.style.display = "none";
         tablaHorarios.style.display = "";
         linkResultados.classList.remove("active");
         linkHorarios.classList.add("active");
