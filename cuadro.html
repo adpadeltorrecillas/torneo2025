@@ -15,28 +15,20 @@
     color: #2c3e50;
     margin-bottom: 30px;
   }
-  .cuadro-container {
-    position: relative;
-    overflow-x: auto;
-    padding-bottom: 60px;
-    border: 1px solid #ddd;
-    background: white;
-  }
   .cuadro {
     display: grid;
     grid-template-columns: repeat(3, 220px);
     grid-auto-rows: 100px;
     gap: 40px 60px;
     padding: 20px 40px;
-    position: relative;
   }
   .ronda-titulo {
-    grid-column: span 1;
     font-weight: bold;
     font-size: 18px;
     text-align: center;
     color: #34495e;
     margin-bottom: 10px;
+    grid-column: span 1;
   }
   .partido {
     background: white;
@@ -48,27 +40,17 @@
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    position: relative;
   }
   .ganador {
     margin-top: 8px;
     font-weight: bold;
     color: #27ae60;
   }
-  svg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-  }
 </style>
 </head>
 <body>
   <h1>Cuadro de Enfrentamientos</h1>
-  <div class="cuadro-container" id="container">
-    <div class="cuadro" id="cuadro"></div>
-    <svg id="lineas" width="100%" height="400"></svg>
-  </div>
+  <div class="cuadro" id="cuadro"></div>
 
   <script>
     const URL_CSV_CUADRO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=1648244325&single=true&output=csv";
@@ -102,10 +84,9 @@
       return result;
     }
 
-    function crearPartidoHTML(id, eq1, eq2, ganador) {
+    function crearPartidoHTML(eq1, eq2, ganador) {
       const div = document.createElement('div');
       div.className = 'partido';
-      div.id = id; // id para referencia en líneas
       div.innerHTML = `
         <div>${eq1}</div>
         <div>vs</div>
@@ -134,110 +115,29 @@
         const cuadroDiv = document.getElementById("cuadro");
         cuadroDiv.innerHTML = "";
 
-        // Agregar títulos
-        ordenRondas.forEach((r, i) => {
+        ordenRondas.forEach((ronda, i) => {
+          // Título ronda
           const titulo = document.createElement("div");
           titulo.className = "ronda-titulo";
-          titulo.textContent = r;
-          titulo.style.gridColumn = (i+1);
+          titulo.textContent = ronda;
+          titulo.style.gridColumn = i + 1;
           cuadroDiv.appendChild(titulo);
-        });
 
-        // Guardamos las posiciones para dibujar líneas
-        const posiciones = {};
-
-        // Insertar partidos en grid con posiciones fijas por id
-        // Para que las líneas queden bien, ponemos los partidos en filas fijas:
-        // Cuartos: 4 partidos, filas 2-5
-        // Semifinal: 2 partidos, filas 2 y 4
-        // Final: 1 partido, fila 3
-
-        // Mapeo de id a fila (fila en grid)
-        const filaPorId = {
-          "1": 2,
-          "2": 3,
-          "3": 4,
-          "4": 5,
-          "5": 2,
-          "6": 4,
-          "7": 3
-        };
-
-        ordenRondas.forEach((ronda, colIndex) => {
           if(rondas[ronda]) {
-            rondas[ronda].forEach((p) => {
-              const partidoDiv = crearPartidoHTML(`${ronda}-${p.id}`, p.eq1, p.eq2, p.ganador);
-              partidoDiv.style.gridColumn = colIndex + 1;
-              partidoDiv.style.gridRow = filaPorId[p.id] || 'auto';
+            // Ordenar por id para orden correcto
+            rondas[ronda].sort((a,b) => Number(a.id) - Number(b.id));
+            rondas[ronda].forEach(({ eq1, eq2, ganador }) => {
+              const partidoDiv = crearPartidoHTML(eq1, eq2, ganador);
+              partidoDiv.style.gridColumn = i + 1;
               cuadroDiv.appendChild(partidoDiv);
-              posiciones[`${ronda}-${p.id}`] = partidoDiv;
             });
           }
         });
 
-        // Esperar a que el DOM pinte para calcular posiciones
-        setTimeout(() => dibujarLineas(posiciones), 100);
-
-      } catch(err) {
+      } catch (err) {
         console.error("Error cargando cuadro:", err);
         document.getElementById("cuadro").textContent = "Error cargando datos del cuadro.";
       }
-    }
-
-    function dibujarLineas(posiciones) {
-      const svg = document.getElementById("lineas");
-      svg.innerHTML = "";
-      const cont = document.getElementById("container");
-      const contRect = cont.getBoundingClientRect();
-
-      function puntoDerecho(el) {
-        const rect = el.getBoundingClientRect();
-        return {
-          x: rect.right - contRect.left,
-          y: rect.top + rect.height/2 - contRect.top
-        };
-      }
-      function puntoIzquierdo(el) {
-        const rect = el.getBoundingClientRect();
-        return {
-          x: rect.left - contRect.left,
-          y: rect.top + rect.height/2 - contRect.top
-        };
-      }
-
-      const conexiones = [
-        { from: "Cuartos-1", to: "Semifinal-5" },
-        { from: "Cuartos-2", to: "Semifinal-5" },
-        { from: "Cuartos-3", to: "Semifinal-6" },
-        { from: "Cuartos-4", to: "Semifinal-6" },
-        { from: "Semifinal-5", to: "Final-7" },
-        { from: "Semifinal-6", to: "Final-7" },
-      ];
-
-      conexiones.forEach(({from, to}) => {
-        const elFrom = posiciones[from];
-        const elTo = posiciones[to];
-        if(!elFrom || !elTo) return;
-
-        const pFrom = puntoDerecho(elFrom);
-        const pTo = puntoIzquierdo(elTo);
-
-        const dx = (pTo.x - pFrom.x) / 2;
-
-        const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-        path.setAttribute("stroke", "#2980b9");
-        path.setAttribute("stroke-width", "3");
-        path.setAttribute("fill", "none");
-
-        const d = `
-          M ${pFrom.x} ${pFrom.y}
-          h ${dx}
-          V ${pTo.y}
-          h ${dx}
-        `;
-        path.setAttribute("d", d);
-        svg.appendChild(path);
-      });
     }
 
     cargarCuadro();
