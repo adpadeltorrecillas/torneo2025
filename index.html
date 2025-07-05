@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Torneo de Pádel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -29,6 +29,27 @@
     }
     nav button.active {
       background-color: #2c3e50;
+    }
+    .categorias {
+      margin: 20px auto;
+      max-width: 600px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .categorias button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 20px;
+      background-color: #ecf0f1;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .categorias button.active {
+      background-color: #3498db;
+      color: white;
+      font-weight: bold;
     }
     table {
       width: 90%;
@@ -62,6 +83,13 @@
 
   <!-- Sección Resultados -->
   <section id="seccion-resultados">
+    <div class="categorias">
+      <button class="cat-btn active" data-cat="Primera">Primera</button>
+      <button class="cat-btn" data-cat="Primera Consolación">Primera Consolación</button>
+      <button class="cat-btn" data-cat="Segunda">Segunda</button>
+      <button class="cat-btn" data-cat="Tercera">Tercera</button>
+      <button class="cat-btn" data-cat="Femenino">Femenino</button>
+    </div>
     <table id="tabla-resultados">
       <thead>
         <tr>
@@ -91,20 +119,30 @@
     const SHEET_RESULTADOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=0&single=true&output=csv";
     const SHEET_HORARIOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=319054192&single=true&output=csv";
 
+    let resultados = [];
+    let categoriaActual = "Primera";
+
     function parseCSV(text) {
       const rows = text.trim().split("\n").slice(1);
-      return rows.map(row => row.split(",").map(cell => cell.replace(/(^"|"$)/g, '')));
+      return rows.map(row => {
+        // Separar respetando comillas (básico)
+        const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+        return cols ? cols.map(c => c.replace(/^"|"$/g, "")) : [];
+      });
     }
 
     async function cargarResultados() {
       const res = await fetch(SHEET_RESULTADOS);
       const csv = await res.text();
-      const datos = parseCSV(csv);
+      resultados = parseCSV(csv);
+      mostrarResultados(categoriaActual);
+    }
+
+    function mostrarResultados(cat) {
       const tbody = document.querySelector("#tabla-resultados tbody");
       tbody.innerHTML = "";
-      datos.forEach(([partido, resultado]) => {
-        const row = `<tr><td>${partido}</td><td>${resultado}</td></tr>`;
-        tbody.insertAdjacentHTML("beforeend", row);
+      resultados.filter(r => r[2] === cat).forEach(([partido, resultado]) => {
+        tbody.insertAdjacentHTML("beforeend", `<tr><td>${partido}</td><td>${resultado}</td></tr>`);
       });
     }
 
@@ -115,8 +153,7 @@
       const tbody = document.querySelector("#tabla-horarios tbody");
       tbody.innerHTML = "";
       datos.forEach(([fecha, hora, partido]) => {
-        const row = `<tr><td>${fecha}</td><td>${hora}</td><td>${partido}</td></tr>`;
-        tbody.insertAdjacentHTML("beforeend", row);
+        tbody.insertAdjacentHTML("beforeend", `<tr><td>${fecha}</td><td>${hora}</td><td>${partido}</td></tr>`);
       });
     }
 
@@ -132,6 +169,15 @@
       document.getElementById("seccion-horarios").classList.remove("hidden");
       document.getElementById("btn-horarios").classList.add("active");
       document.getElementById("btn-resultados").classList.remove("active");
+    });
+
+    document.querySelectorAll(".cat-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        categoriaActual = button.getAttribute("data-cat");
+        mostrarResultados(categoriaActual);
+        document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+        button.classList.add("active");
+      });
     });
 
     cargarResultados();
