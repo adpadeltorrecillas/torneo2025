@@ -2,222 +2,96 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Torneo Pádel - Resultados y Horarios</title>
+  <title>Torneo Pádel</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-
     body {
-      font-family: 'Poppins', sans-serif;
-      background: #f0f4f8;
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
       margin: 0;
-      padding: 30px 20px;
-      color: #333;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      padding: 20px;
+      text-align: center;
     }
-
     h1 {
-      color: #2a4d69;
-      margin-bottom: 20px;
-      font-weight: 600;
-      text-align: center;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      font-size: 2.4rem;
+      color: #2c3e50;
     }
-
     nav {
-      margin-bottom: 25px;
-      width: 100%;
-      max-width: 900px;
-      display: flex;
-      justify-content: center;
-      gap: 30px;
+      margin-bottom: 20px;
     }
-
     nav a {
-      cursor: pointer;
-      color: #2a4d69;
-      font-weight: 600;
+      margin: 0 15px;
       text-decoration: none;
-      padding: 10px 20px;
-      border: 2px solid transparent;
-      border-radius: 8px;
-      transition: all 0.3s ease;
-      user-select: none;
-    }
-    nav a.active,
-    nav a:hover {
-      background-color: #2a4d69;
-      color: white;
-      border-color: #1f3d59;
-    }
-
-    /* Botones categorías resultados */
-    #categorias-resultados {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      margin-bottom: 25px;
-      flex-wrap: wrap;
-      max-width: 900px;
-    }
-
-    .cat-btn {
-      background: #e1e8f5;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
-      font-weight: 600;
+      font-weight: bold;
+      color: #2980b9;
       cursor: pointer;
-      transition: background-color 0.3s ease;
-      user-select: none;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
-
-    .cat-btn:hover {
-      background: #b1c5e0;
+    nav a.active {
+      color: #e74c3c;
     }
-
+    .cat-btn {
+      margin: 5px;
+      padding: 8px 12px;
+      background: #ecf0f1;
+      border: none;
+      cursor: pointer;
+    }
     .cat-btn.active {
-      background: #2a4d69;
+      background: #3498db;
       color: white;
     }
-
     table {
-      width: 100%;
-      max-width: 900px;
-      border-collapse: separate;
-      border-spacing: 0;
-      box-shadow: 0 8px 24px rgba(42, 77, 105, 0.15);
-      border-radius: 12px;
-      overflow: hidden;
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 90%;
+      max-width: 800px;
       background: white;
-      margin-bottom: 40px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-
-    thead {
-      background: #2a4d69;
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    th {
+      background: #2c3e50;
       color: white;
     }
-
-    th, td {
-      padding: 16px 24px;
-      text-align: center;
-      font-weight: 500;
-      border-bottom: 1px solid #e2e8f0;
-      user-select: none;
-    }
-
-    tbody tr:hover {
-      background-color: #f7f9fc;
-    }
-
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    /* Partido activo en horarios */
     .partido-activo {
-      background-color: #ffdddd !important;
-      color: #a80000;
-      font-weight: 700;
-      border-left: 5px solid #a80000;
-      transition: background-color 0.5s ease;
+      background: #ffdddd !important;
+      font-weight: bold;
+      color: #c0392b;
     }
-
-    /* Contenedores tablas pistas */
+    #categorias-resultados {
+      margin-bottom: 20px;
+    }
     #contenedor-horarios {
       display: flex;
-      gap: 30px;
       justify-content: center;
+      gap: 30px;
       flex-wrap: wrap;
-      max-width: 940px;
-      margin-bottom: 40px;
     }
-
     .tabla-pista {
-      width: 450px;
-      min-width: 300px;
-    }
-
-    .tabla-pista h2 {
-      text-align: center;
-      color: #2a4d69;
-      margin-bottom: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      font-size: 1.4rem;
-    }
-
-    @media (max-width: 960px) {
-      #contenedor-horarios {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .tabla-pista {
-        width: 100%;
-        max-width: 500px;
-      }
-    }
-
-    @media (max-width: 600px) {
-      body {
-        padding: 15px 10px;
-      }
-
-      h1 {
-        font-size: 1.8rem;
-      }
-
-      table {
-        font-size: 14px;
-      }
-
-      th, td {
-        padding: 12px 10px;
-      }
-
-      nav {
-        gap: 15px;
-      }
-
-      #categorias-resultados {
-        gap: 10px;
-      }
-
-      .cat-btn {
-        padding: 8px 14px;
-        font-size: 0.9rem;
-      }
+      width: 100%;
+      max-width: 450px;
     }
   </style>
 </head>
 <body>
-  <h1>Torneo Pádel</h1>
+  <h1>Torneo de Pádel</h1>
 
   <nav>
     <a id="link-resultados" class="active">Resultados</a>
     <a id="link-horarios">Horarios</a>
   </nav>
 
-  <!-- Categorías dentro de Resultados -->
-  <div id="categorias-resultados" style="display: flex;">
-    <button class="cat-btn active" data-cat="Primera Categoría">🎾 Primera Categoría</button>
-    <button class="cat-btn" data-cat="Primera Consolación">🏆 Primera Consolación</button>
-    <button class="cat-btn" data-cat="Segunda Categoría">⭐ Segunda Categoría</button>
-    <button class="cat-btn" data-cat="Tercera Categoría">🥉 Tercera Categoría</button>
-    <button class="cat-btn" data-cat="Categoría Femenino">👩‍🦰 Categoría Femenino</button>
+  <!-- Botones Categorías -->
+  <div id="categorias-resultados">
+    <button class="cat-btn active" data-cat="Primera Categoría">Primera Categoría</button>
+    <button class="cat-btn" data-cat="Primera Consolación">Primera Consolación</button>
+    <button class="cat-btn" data-cat="Segunda Categoría">Segunda Categoría</button>
+    <button class="cat-btn" data-cat="Tercera Categoría">Tercera Categoría</button>
+    <button class="cat-btn" data-cat="Categoría Femenino">Categoría Femenino</button>
   </div>
 
-  <!-- Tabla Resultados -->
+  <!-- Resultados -->
   <table id="tabla-resultados">
     <thead>
       <tr>
@@ -229,10 +103,10 @@
     <tbody></tbody>
   </table>
 
-  <!-- Contenedor tablas Horarios -->
+  <!-- Horarios -->
   <div id="contenedor-horarios" style="display:none;">
     <div class="tabla-pista">
-      <h2>Pista 1</h2>
+      <h3>Pista 1</h3>
       <table id="tabla-horarios-pista1">
         <thead>
           <tr>
@@ -245,7 +119,7 @@
       </table>
     </div>
     <div class="tabla-pista">
-      <h2>Pista 2</h2>
+      <h3>Pista 2</h3>
       <table id="tabla-horarios-pista2">
         <thead>
           <tr>
@@ -263,7 +137,6 @@
     const SHEET_RESULTADOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=0&single=true&output=csv";
     const SHEET_HORARIOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=319054192&single=true&output=csv";
 
-    // Parse CSV fila
     function parseCSVRow(row) {
       const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
       const matches = [];
@@ -274,125 +147,84 @@
       return matches;
     }
 
-    // Variables globales para resultados y categoría actual
     let resultadosData = [];
     let categoriaActual = "Primera Categoría";
 
     async function cargarResultados() {
-      try {
-        const res = await fetch(SHEET_RESULTADOS);
-        const csv = await res.text();
-        const rows = csv.trim().split("\n").slice(1);
-
-        resultadosData = rows.map(row => {
-          const [partido, resultado, ronda, categoria] = parseCSVRow(row);
-          return { partido, resultado, ronda, categoria };
-        });
-
-        mostrarResultadosPorCategoria(categoriaActual);
-
-      } catch (error) {
-        console.error("Error al cargar resultados:", error);
-      }
+      const res = await fetch(SHEET_RESULTADOS);
+      const csv = await res.text();
+      const rows = csv.trim().split("\n").slice(1);
+      resultadosData = rows.map(row => {
+        const [partido, resultado, ronda, categoria] = parseCSVRow(row);
+        return { partido, resultado, ronda, categoria };
+      });
+      mostrarResultadosPorCategoria(categoriaActual);
     }
 
     function mostrarResultadosPorCategoria(categoria) {
       const tbody = document.querySelector("#tabla-resultados tbody");
       tbody.innerHTML = "";
-
-      const filtrados = resultadosData.filter(r => r.categoria === categoria);
-
-      filtrados.forEach(({ ronda, partido, resultado }) => {
+      resultadosData.filter(r => r.categoria === categoria).forEach(r => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${ronda}</td>
-          <td>${partido}</td>
-          <td>${resultado}</td>
-        `;
+        tr.innerHTML = `<td>${r.ronda}</td><td>${r.partido}</td><td>${r.resultado}</td>`;
         tbody.appendChild(tr);
       });
     }
 
-    // Eventos para botones categorías
     document.querySelectorAll(".cat-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         categoriaActual = btn.getAttribute("data-cat");
         mostrarResultadosPorCategoria(categoriaActual);
-
         document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
       });
     });
 
-    // Cargar horarios, dividir por pistas y marcar partido activo según columna EnJuego
     async function cargarHorarios() {
-      try {
-        const res = await fetch(SHEET_HORARIOS);
-        const csv = await res.text();
-        const rows = csv.trim().split("\n").slice(1);
+      const res = await fetch(SHEET_HORARIOS);
+      const csv = await res.text();
+      const rows = csv.trim().split("\n").slice(1);
 
-        const pista1Body = document.querySelector("#tabla-horarios-pista1 tbody");
-        const pista2Body = document.querySelector("#tabla-horarios-pista2 tbody");
-        pista1Body.innerHTML = "";
-        pista2Body.innerHTML = "";
+      const pista1 = document.querySelector("#tabla-horarios-pista1 tbody");
+      const pista2 = document.querySelector("#tabla-horarios-pista2 tbody");
+      pista1.innerHTML = "";
+      pista2.innerHTML = "";
 
-        rows.forEach(row => {
-          // Añadimos la columna EnJuego (asumimos que es la última)
-          const [fecha, hora, partido, pista, enJuego] = parseCSVRow(row);
-
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${fecha}</td>
-            <td>${hora}</td>
-            <td>${partido}</td>
-          `;
-
-          if (enJuego && enJuego.toLowerCase() === "sí") {
-            tr.classList.add("partido-activo");
-          }
-
-          if (pista.toLowerCase() === "pista 1") {
-            pista1Body.appendChild(tr);
-          } else if (pista.toLowerCase() === "pista 2") {
-            pista2Body.appendChild(tr);
-          }
-        });
-      } catch (error) {
-        console.error("Error al cargar horarios:", error);
-      }
-    }
-
-    // Mostrar tabla resultados u horarios
-    function mostrarTabla(tabla) {
-      const tablaResultados = document.getElementById("tabla-resultados");
-      const tablaHorariosCont = document.getElementById("contenedor-horarios");
-      const categoriasResultados = document.getElementById("categorias-resultados");
-      const linkResultados = document.getElementById("link-resultados");
-      const linkHorarios = document.getElementById("link-horarios");
-
-      if (tabla === "resultados") {
-        tablaResultados.style.display = "";
-        categoriasResultados.style.display = "flex";
-        tablaHorariosCont.style.display = "none";
-        linkResultados.classList.add("active");
-        linkHorarios.classList.remove("active");
-      } else {
-        tablaResultados.style.display = "none";
-        categoriasResultados.style.display = "none";
-        tablaHorariosCont.style.display = "";
-        linkResultados.classList.remove("active");
-        linkHorarios.classList.add("active");
-      }
+      rows.forEach(row => {
+        const [fecha, hora, partido, pista, enJuego] = parseCSVRow(row);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${fecha}</td><td>${hora}</td><td>${partido}</td>`;
+        if (enJuego && enJuego.toLowerCase() === "sí") {
+          tr.classList.add("partido-activo");
+        }
+        if (pista.toLowerCase() === "pista 1") {
+          pista1.appendChild(tr);
+        } else if (pista.toLowerCase() === "pista 2") {
+          pista2.appendChild(tr);
+        }
+      });
     }
 
     document.getElementById("link-resultados").addEventListener("click", () => {
-      mostrarTabla("resultados");
-    });
-    document.getElementById("link-horarios").addEventListener("click", () => {
-      mostrarTabla("horarios");
+      document.getElementById("tabla-resultados").style.display = "";
+      document.getElementById("categorias-resultados").style.display = "block";
+      document.getElementById("contenedor-horarios").style.display = "none";
+      setActiveTab("resultados");
     });
 
-    // Carga inicial
+    document.getElementById("link-horarios").addEventListener("click", () => {
+      document.getElementById("tabla-resultados").style.display = "none";
+      document.getElementById("categorias-resultados").style.display = "none";
+      document.getElementById("contenedor-horarios").style.display = "flex";
+      setActiveTab("horarios");
+    });
+
+    function setActiveTab(tab) {
+      document.getElementById("link-resultados").classList.toggle("active", tab === "resultados");
+      document.getElementById("link-horarios").classList.toggle("active", tab === "horarios");
+    }
+
+    // Inicial
     cargarResultados();
     cargarHorarios();
 
