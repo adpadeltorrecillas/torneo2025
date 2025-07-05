@@ -1,35 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Torneo Pádel - Resultados</title>
+  <title>Resultados Torneo Pádel</title>
   <style>
-    body { font-family: Arial; margin: 20px; }
+    body { font-family: Arial, sans-serif; margin: 20px; }
     table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background-color: #f4f4f4; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    th { background-color: #f2f2f2; }
+    caption { font-size: 1.2em; margin-bottom: 10px; }
   </style>
 </head>
 <body>
   <h1>Resultados del Torneo de Pádel</h1>
-  <table id="resultados">
+  <table id="tabla-resultados">
     <thead>
-      <tr><th>Ronda</th><th>Partido</th><th>Resultado</th></tr>
+      <tr>
+        <th>Ronda</th>
+        <th>Partido</th>
+        <th>Resultado</th>
+      </tr>
     </thead>
-    <tbody></tbody>
+    <tbody>
+      <!-- Aquí se insertarán los datos -->
+    </tbody>
   </table>
 
   <script>
-    const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=0&single=true&output=csv";
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR2l16Kde53D3FF6PNIq9Rtqq7qpRagrh8lbZUGGvJebtbaZQnpeqCIl-oz4uEHYTzIHo0NESBGGQcO/pub?gid=0&single=true&output=csv";
 
-    fetch(url)
-      .then(response => response.text())
-      .then(data => {
-        const rows = data.trim().split('\n').slice(1); // omite la cabecera
-        const tbody = document.querySelector("#resultados tbody");
+    async function cargarResultados() {
+      try {
+        const res = await fetch(SHEET_URL);
+        const csv = await res.text();
+        const rows = csv.trim().split("\n").slice(1); // omite encabezado
+
+        const tbody = document.querySelector("#tabla-resultados tbody");
+        tbody.innerHTML = ""; // limpia la tabla
 
         rows.forEach(row => {
-          const [partido, resultado, ronda] = row.split(',');
+          const [partido, resultado, ronda] = row.split(",");
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${ronda}</td>
@@ -38,7 +48,9 @@
           `;
           tbody.appendChild(tr);
         });
-      });
-  </script>
-</body>
-</html>
+      } catch (error) {
+        console.error("Error al cargar los datos:", error);
+      }
+    }
+
+    // Carga i
