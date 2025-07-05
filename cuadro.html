@@ -13,33 +13,85 @@
   h1 {
     text-align: center;
     color: #2c3e50;
+    margin-bottom: 30px;
   }
   .cuadro {
     display: flex;
     justify-content: center;
-    gap: 40px;
-    flex-wrap: nowrap;
+    gap: 60px;
     overflow-x: auto;
+    padding-bottom: 40px;
+    position: relative;
   }
   .ronda {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 40px;
+    position: relative;
   }
   .ronda h3 {
     text-align: center;
+    margin-bottom: 20px;
+    font-weight: 700;
+    color: #34495e;
   }
   .partido {
     background: white;
-    border: 1px solid #ccc;
-    padding: 8px 12px;
+    border: 2px solid #2980b9;
+    padding: 10px 15px;
     border-radius: 6px;
-    min-width: 180px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    min-width: 200px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+    position: relative;
   }
   .ganador {
     font-weight: bold;
-    color: #2ecc71;
+    color: #27ae60;
+    margin-top: 8px;
+  }
+
+  /* Líneas entre cuadros */
+  /* Para cada ronda menos la última, añadimos líneas con pseudoelementos */
+
+  /* Línea vertical desde centro derecho de cada partido de una ronda a la siguiente */
+  .ronda:not(:last-child) .partido::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -30px;
+    width: 30px;
+    height: 2px;
+    background: #2980b9;
+    transform: translateY(-50%);
+    z-index: 10;
+  }
+
+  /* Línea vertical que conecta los partidos de la siguiente ronda */
+  .ronda:not(:last-child) {
+    padding-right: 30px;
+  }
+
+  /* Para conectar líneas verticales entre partidos */
+  .ronda:not(:last-child) .partido:nth-child(odd)::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -30px;
+    width: 2px;
+    height: 40px;
+    background: #2980b9;
+    transform: translateY(-50%);
+    z-index: 9;
+  }
+  .ronda:not(:last-child) .partido:nth-child(even)::before {
+    content: "";
+    position: absolute;
+    top: -40px;
+    right: -30px;
+    width: 2px;
+    height: 40px;
+    background: #2980b9;
+    z-index: 9;
   }
 </style>
 </head>
@@ -92,8 +144,8 @@
           rondas[ronda].push({ id, eq1, eq2, ganador });
         });
 
-        // Ordenar rondas por aparición en hoja o alfabéticamente
-        const ordenRondas = Object.keys(rondas).sort();
+        // Orden fijo de rondas:
+        const ordenRondas = ["Cuartos", "Semifinal", "Final"];
 
         const cuadroDiv = document.getElementById("cuadro");
         cuadroDiv.innerHTML = "";
